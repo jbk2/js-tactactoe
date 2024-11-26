@@ -1,0 +1,18 @@
+#board-grid {
+  padding-top: 6rem;
+  display: grid;
+  grid-template-columns: repeat(3, 8rem);
+  grid-template-rows: repeat(3, 8rem);
+  justify-content: center;
+}
+
+#board-grid > div:not(:nth-child(3n)) {
+  border-right: 2px solid black;
+}
+
+#board-grid > div:not(:nth-last-child(-n+3)) {
+  border-bottom: 2px solid black;
+}
+
+
+
