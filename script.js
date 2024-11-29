@@ -10,14 +10,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function recordMove(move) {
       boardArray.push(move);
       console.log('Move added to board:', move);
-      console.log('Current board state:', boardArray);
     }
-
+    
     function returnMoves() {
+      console.log('Current board state:', boardArray);
       return [...boardArray]; 
     }
 
-    return { recordMove, returnMoves, displayMoves };
+    function displayMove() {
+      let matchingCell = document.querySelector(`[data-cell-position="${boardArray[boardArray.length - 1]}"]`);
+      matchingCell.insertAdjacentHTML('beforeend', blackCircle);
+      matchingCell.removeEventListener('click', processMove);
+      matchingCell.style.cursor = 'default';
+    }
+
+    return { recordMove, returnMoves, displayMove };
   }();
 
   cells.forEach((cell) => {
@@ -27,11 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function processMove(event) {
     console.log('processMove triggered for:', event.target);
     let cellPosition = event.srcElement.dataset.cellPosition;
-    board.addMove(cellPosition);
-    board.getState;
-    event.target.insertAdjacentHTML('beforeEnd', blackCircle);
-    event.target.removeEventListener('click', processMove);
-    event.target.style.cursor = 'default';
+    board.recordMove(cellPosition);
+    board.returnMoves();
+    board.displayMove();
   }
 
 })
