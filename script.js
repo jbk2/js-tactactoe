@@ -17,11 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
       return [...boardArray]; 
     }
 
+    function lastMoveCell() {
+      return document.querySelector(`[data-cell-position="${boardArray.at(-1)}"]`);
+    }
+    
     function displayMove() {
-      let matchingCell = document.querySelector(`[data-cell-position="${boardArray[boardArray.length - 1]}"]`);
-      matchingCell.insertAdjacentHTML('beforeend', blackCircle);
-      matchingCell.removeEventListener('click', processMove);
-      matchingCell.style.cursor = 'default';
+      let cell = lastMoveCell();
+      cell.insertAdjacentHTML('beforeend', blackCircle);
+      cell.removeEventListener('click', processMove);
+      cell.style.cursor = 'default';
     }
 
     return { recordMove, returnMoves, displayMove };
