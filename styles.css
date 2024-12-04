@@ -15,6 +15,7 @@
   }
 }
 
+/* ########################## Board ################################# */
 #board-grid {
   padding-top: 6rem;
   display: grid;
@@ -54,3 +55,16 @@
   stroke-dashoffset: 282.6; /* Start hidden by offsetting entire length */
 }
 
+
+/* ########################## Game info ################################# */
+
+#game-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+}
+
+#instructions > p {
+  cursor: pointer;
+}
