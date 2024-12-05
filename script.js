@@ -1,79 +1,99 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const x = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,100" stroke="red" stroke-width="5" fill="none" stroke-dasharray="142" stroke-dashoffset="142" id="stroke1"/><path d="M100,0 L0,100" stroke="red" stroke-width="5" fill="none" stroke-dasharray="142" stroke-dashoffset="142" id="stroke2"/></svg>`;
-  const o = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" stroke="black" stroke-width="5" fill="none" class="animated-circle"/></svg>`;
-
-  // board object stores, records and returns moves from boardArray array
+  // ####################### Board object #############################
+  // stores, records and returns moves from boardArray array
   const board = function()  {
     let boardArray = []
-    
+  
     function recordMove(move) {
       boardArray.push(move);
-      console.log('Move added to board:', move);
     }
     
     function returnMoves() {
-      console.log('Current board state:', boardArray);
       return [...boardArray]; 
     }
     
-    function lastMove() {
-      return boardArray.at(-1)
-    }
-    
-    return { recordMove, returnMoves, lastMove };
+    return { recordMove, returnMoves };
   }();
   
+  // ####################### updates UI #############################
   function uiController() {
-    const cells = document.querySelectorAll('#board-grid > div');
-    const instructions = document.getElementById('instructions');
+    function displayMove(cell, symbol) {
+      const x = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,100" stroke="red" stroke-width="5" fill="none" stroke-dasharray="142" stroke-dashoffset="142" id="stroke1"/><path d="M100,0 L0,100" stroke="red" stroke-width="5" fill="none" stroke-dasharray="142" stroke-dashoffset="142" id="stroke2"/></svg>`;
+      const o = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" stroke="black" stroke-width="5" fill="none" class="animated-circle"/></svg>`;
+      let uiCell = document.querySelector(`[data-cell-position="${cell}"]`);
+      let svg = symbol === 'x' ? x : o;
+      uiCell.innerHTML = svg;
+    }
     
-    function lastMoveCell() {
-      return document.querySelector(`[data-cell-position="${board.lastMove}"]`);
+    function updateInstructions(text) {
+      document.getElementById('instructions').innerHTML = text;
     }
 
-    function displayMove() {
-      let cell = lastMoveCell();
-      cell.insertAdjacentHTML('beforeend', game.activePlayer.symbol);
-      cell.removeEventListener('click', processMove);
-      cell.style.cursor = 'default';
+    function updatePlayerNumber(number) {
+      document.getElementById('player-number').innerHTML = number;
     }
 
-    return { displayMove }
-  }
-
-  cells.forEach((cell) => {
-    cell.addEventListener('click', processMove);
-  })
+    return { displayMove, updatePlayerNumber, updateInstructions }
+  };
   
-  function processMove(event) {
-    console.log('processMove triggered for:', event.target);
-    let cellPosition = event.srcElement.dataset.cellPosition;
-    board.recordMove(cellPosition);
-    board.returnMoves();
-    board.displayMove();
-  }
-
-  function createPlayer(symbol) {
-    const symbol = symbol;
-    const getSymbol = () => symbol;
-
-    return { getSymbol }; 
+  // creates player
+  function createPlayer(symbol, number) {
+    return {
+      getSymbol: () => symbol, 
+      getNumber: () => number
+    };
   };
 
-
+  
+  // ####################### Runs whole game #############################
   function GameController() {
-    const player1 = createPlayer('x');
-    const player2 = createPlayer('o');
+    const player1 = createPlayer('x', 1);
+    const player2 = createPlayer('o', 2);
     let activePlayer = player1;
+
     const changeActivePlayer = () => {
       activePlayer = activePlayer === player1 ? player2 : player1;
     };
     const getActivePlayer = ()  => activePlayer;
 
-    return { getActivePlayer, changeActivePlayer };
+    function processMove(event) {
+      let cellPosition = event.srcElement.dataset.cellPosition;
+      let symbol = activePlayer.getSymbol()
+      let moveData = [cellPosition, symbol];
+      let ui = uiController();
+
+      board.recordMove(moveData);
+      ui.displayMove(cellPosition, symbol);
+
+      // check for game win, if so update dialogue UI 
+      changeActivePlayer();
+      ui.updatePlayerNumber(getActivePlayer().getNumber());
+    }
+    
+    return { getActivePlayer, changeActivePlayer, processMove };
+  };
+  
+  function startGame() {
+    document.getElementById('start-game').remove();
+    const game = GameController()
+    const cells = document.querySelectorAll('#board-grid > div');
+    
+    cells.forEach((cell) => {
+      cell.style.cursor = 'pointer';
+      const processMoveHandler = (event) => {
+        game.processMove(event);
+        cell.removeEventListener('click', processMoveHandler)
+        cell.style.cursor = 'default';
+      }
+      cell.addEventListener('click', processMoveHandler);
+    });
+  };
+  
+  const startEl = document.getElementById('start-game');
+
+  if(startEl) {
+    startEl.addEventListener('click', startGame);
   };
 
-
-  const game = GameController()
 
 })
