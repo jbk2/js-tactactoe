@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // ####################### Board object #############################
-  // stores, records and returns moves from boardArray array
+  // ####################### Board module #############################
   const board = function()  {
     let boardArray = []
   
@@ -15,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return { recordMove, returnMoves };
   }();
   
-  // ####################### updates UI #############################
+  // ####################### UI Controller #############################
   function uiController() {
     function displayMove(cell, symbol) {
       const x = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L100,100" stroke="red" stroke-width="5" fill="none" stroke-dasharray="142" stroke-dashoffset="142" id="stroke1"/><path d="M100,0 L0,100" stroke="red" stroke-width="5" fill="none" stroke-dasharray="142" stroke-dashoffset="142" id="stroke2"/></svg>`;
@@ -36,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return { displayMove, updatePlayerNumber, updateInstructions }
   };
   
-  // creates player
+  // ####################### Player Factory #############################
   function createPlayer(symbol, number) {
     return {
       getSymbol: () => symbol, 
@@ -45,26 +44,26 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   
-  // ####################### Runs whole game #############################
-  function GameController() {
+  // ####################### Game Controller #############################
+  function gameController() {
+    const ui = uiController();
     const player1 = createPlayer('x', 1);
     const player2 = createPlayer('o', 2);
     let activePlayer = player1;
-
+    
     const changeActivePlayer = () => {
       activePlayer = activePlayer === player1 ? player2 : player1;
     };
     const getActivePlayer = ()  => activePlayer;
-
+    
     function processMove(event) {
       let cellPosition = event.srcElement.dataset.cellPosition;
       let symbol = activePlayer.getSymbol()
       let moveData = [cellPosition, symbol];
-      let ui = uiController();
-
+      
       board.recordMove(moveData);
       ui.displayMove(cellPosition, symbol);
-
+      
       // check for game win, if so update dialogue UI 
       changeActivePlayer();
       ui.updatePlayerNumber(getActivePlayer().getNumber());
@@ -73,9 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
     return { getActivePlayer, changeActivePlayer, processMove };
   };
   
+  // ####################### Start Game Set up #############################
   function startGame() {
     document.getElementById('start-game').remove();
-    const game = GameController()
+    const game = gameController()
     const cells = document.querySelectorAll('#board-grid > div');
     
     cells.forEach((cell) => {
@@ -89,11 +89,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   };
   
+  // ####################### Initialisation #############################
   const startEl = document.getElementById('start-game');
-
   if(startEl) {
     startEl.addEventListener('click', startGame);
   };
-
-
+  
+  
 })
