@@ -43,6 +43,48 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   };
 
+  // ####################### Win Checker #############################
+  function winChecker(board, symbol) {
+  
+    let activePlayersMoves = board.returnMoves().filter((move) => move[1] === symbol)
+    
+    if(activePlayersMoves.length > 2) {
+      checkRow()
+      checkColumn()
+    }
+
+    
+    function checkRow() {
+      const rows = [1, 2, 3].map((row) =>
+        activePlayersMoves.filter((move) => move[0].at(0) === String(row))
+      );
+
+      const winningRow = rows.filter(row => row.length === 3)
+      
+      if (winningRow) {
+        console.log("we have a win - " + winningRow)
+        return winningRow
+      };
+    };
+
+    function checkColumn() {
+      let col1 = activePlayersMoves.filter((move) => move[0].at(-1) === '1');
+      let col2 = activePlayersMoves.filter((move) => move[0].at(-1) === '2');
+      let col3 = activePlayersMoves.filter((move) => move[0].at(-1) === '3');
+      if(col1.length === 3 || col2.length === 3 || col3.length === 3) {
+        console.log("yes there's a col win");
+        return "yes there's a col win";
+      };
+    };
+    function checkDiagonal() {
+
+    };
+    function hasWin() {
+
+    };
+    // return { hasWin }
+  };
+
   
   // ####################### Game Controller #############################
   function gameController() {
@@ -64,7 +106,15 @@ document.addEventListener('DOMContentLoaded', function() {
       board.recordMove(moveData);
       ui.displayMove(cellPosition, symbol);
       
+      winChecker(board, symbol)
+      // if(winChecker(board, symbol).hasWin) {
+        // Add animated background to winning cells
+        // update UI text & present pop up animation
+        // break
+      // };
       // check for game win, if so update dialogue UI 
+      // console.log(board.returnMoves());
+      
       changeActivePlayer();
       ui.updatePlayerNumber(getActivePlayer().getNumber());
     }
