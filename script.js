@@ -38,7 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
       );
     }
 
-    return { displayMove, updatePlayerNumber, updateInstructions, addWinBackground }
+    function removeListeners() {
+      document.querySelectorAll('#board-grid > div').forEach((cell) => 
+        cell.removeEventListener('click', processMoveHandler)
+      );
+    }
+
+    return { displayMove, updatePlayerNumber, updateInstructions, addWinBackground, removeListeners }
   };
   
   // ####################### Player Factory #############################
@@ -119,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const player1 = createPlayer('x', 1);
     const player2 = createPlayer('o', 2);
     let activePlayer = player1;
+    let gameOver = false;
     
     const changeActivePlayer = () => {
       activePlayer = activePlayer === player1 ? player2 : player1;
@@ -138,15 +145,19 @@ document.addEventListener('DOMContentLoaded', function() {
         let winningMoves = gameState.getWinningMoves();
         ui.addWinBackground(winningMoves); // highlight background of winning 
         ui.updateInstructions(`Player no; ${getActivePlayer().getNumber()}, with symbol; ${symbol} wins the game`)
-        // Stop game
-        // update instructions
-      }
-      
-      changeActivePlayer();
-      ui.updatePlayerNumber(getActivePlayer().getNumber());
+        gameOver = true;
+        // update instructions with 'play again?'
+      } else {
+        changeActivePlayer();
+        ui.updatePlayerNumber(getActivePlayer().getNumber());
+      };
+    }
+
+    function isGameOver() {
+      return gameOver;
     }
     
-    return { getActivePlayer, changeActivePlayer, processMove };
+    return { getActivePlayer, changeActivePlayer, processMove, isGameOver };
   };
   
   // ####################### Start Game Set up #############################
@@ -154,16 +165,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('start-game').remove();
     const game = gameController()
     const cells = document.querySelectorAll('#board-grid > div');
-    
+   
+    function processMoveHandler(event) {
+      const cell = event.currentTarget;
+      game.processMove(event);
+      cell.removeEventListener('click', processMoveHandler);
+      cell.style.cursor = 'default';
+  
+      if (game.isGameOver()) {
+        removeListeners();
+      }
+    }
+
     cells.forEach((cell) => {
       cell.style.cursor = 'pointer';
-      const processMoveHandler = (event) => {
-        game.processMove(event);
-        cell.removeEventListener('click', processMoveHandler)
-        cell.style.cursor = 'default';
-      }
       cell.addEventListener('click', processMoveHandler);
     });
+
+    function removeListeners() {
+      cells.forEach((cell) => {
+        cell.removeEventListener('click', processMoveHandler);
+        cell.style.cursor = 'default';
+      });
+    }
+
+
   };
   
   // ####################### Initialisation #############################
