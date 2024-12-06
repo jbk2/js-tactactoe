@@ -32,7 +32,13 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('player-number').innerHTML = number;
     }
 
-    return { displayMove, updatePlayerNumber, updateInstructions }
+    function addWinBackground(moves) {
+      moves.forEach((move) =>
+        document.querySelector(`[data-cell-position="${move[0]}"]`).style.background = 'green'
+      );
+    }
+
+    return { displayMove, updatePlayerNumber, updateInstructions, addWinBackground }
   };
   
   // ####################### Player Factory #############################
@@ -47,45 +53,66 @@ document.addEventListener('DOMContentLoaded', function() {
   function winChecker(board, symbol) {
   
     let activePlayersMoves = board.returnMoves().filter((move) => move[1] === symbol)
+    let winningMoves = [];
     
-    if(activePlayersMoves.length > 2) {
-      checkRow()
-      checkColumn()
+    function setWinningMoves(moves) {
+      winningMoves = moves;
+    }
+    
+    function getWinningMoves() {
+      return winningMoves;
     }
 
-    
     function checkRow() {
       const rows = [1, 2, 3].map((row) =>
         activePlayersMoves.filter((move) => move[0].at(0) === String(row))
       );
-
-      const winningRow = rows.filter(row => row.length === 3)
+      const winningRow = rows.filter(row => row.length === 3);
       
-      if (winningRow) {
-        console.log("we have a win - " + winningRow)
-        return winningRow
+      if (winningRow.length > 0) {
+        console.log(winningRow.flat());
+        setWinningMoves(winningRow.flat())
       };
     };
 
     function checkColumn() {
-      let col1 = activePlayersMoves.filter((move) => move[0].at(-1) === '1');
-      let col2 = activePlayersMoves.filter((move) => move[0].at(-1) === '2');
-      let col3 = activePlayersMoves.filter((move) => move[0].at(-1) === '3');
-      if(col1.length === 3 || col2.length === 3 || col3.length === 3) {
-        console.log("yes there's a col win");
-        return "yes there's a col win";
+      const cols = [1, 2, 3].map((col) =>
+        activePlayersMoves.filter((move) => move[0].at(-1) === String(col))
+      );
+      const winningCol = cols.filter(col => col.length === 3);
+      
+      if(winningCol.length > 0) {
+        console.log(winningCol.flat());
+        setWinningMoves(winningCol.flat())
       };
     };
+    
     function checkDiagonal() {
+      let diagWins = [['1-1', '2-2', '3-3'], ['1-3', '2-2', '3-1']];
+      diagWins.forEach((combo) => {
+        let matchingMoves = activePlayersMoves.filter((playersMove) => {
+          return combo.includes(playersMove[0]);
+        })
 
+        if (matchingMoves.length === combo.length) {
+          console.log(matchingMoves);
+          setWinningMoves(matchingMoves);
+        }
+      });
     };
+
     function hasWin() {
-
+      if(activePlayersMoves.length > 2) {
+        checkRow();
+        checkColumn();
+        checkDiagonal();
+      }
+      return winningMoves.length > 0;
     };
-    // return { hasWin }
+
+    return { hasWin, getWinningMoves }
   };
 
-  
   // ####################### Game Controller #############################
   function gameController() {
     const ui = uiController();
@@ -106,14 +133,14 @@ document.addEventListener('DOMContentLoaded', function() {
       board.recordMove(moveData);
       ui.displayMove(cellPosition, symbol);
       
-      winChecker(board, symbol)
-      // if(winChecker(board, symbol).hasWin) {
-        // Add animated background to winning cells
-        // update UI text & present pop up animation
-        // break
-      // };
-      // check for game win, if so update dialogue UI 
-      // console.log(board.returnMoves());
+      let gameState = winChecker(board, symbol)
+      if (gameState.hasWin()) {
+        let winningMoves = gameState.getWinningMoves();
+        ui.addWinBackground(winningMoves); // highlight background of winning 
+        ui.updateInstructions(`Player no; ${getActivePlayer().getNumber()}, with symbol; ${symbol} wins the game`)
+        // Stop game
+        // update instructions
+      }
       
       changeActivePlayer();
       ui.updatePlayerNumber(getActivePlayer().getNumber());
