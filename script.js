@@ -24,12 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
       uiCell.innerHTML = svg;
     }
     
-    function updateInstructions(text) {
-      document.getElementById('instructions').innerHTML = text;
-    }
-
-    function updatePlayerNumber(number) {
-      document.getElementById('player-number').innerHTML = number;
+    function updateDialogue(text) {
+      document.getElementById('dialogue').textContent = text;
     }
 
     function addWinBackground(moves) {
@@ -38,13 +34,23 @@ document.addEventListener('DOMContentLoaded', function() {
       );
     }
 
+    function addRestartButton() {
+      let btn = document.createElement('button');
+      btn.className = "restart-btn"
+      btn.textContent = "Play again";
+      document.getElementById('game-info').appendChild(btn);
+      btn.addEventListener('click', () => {
+        location.reload();
+      });
+    };
+
     function removeListeners() {
       document.querySelectorAll('#board-grid > div').forEach((cell) => 
         cell.removeEventListener('click', processMoveHandler)
       );
     }
 
-    return { displayMove, updatePlayerNumber, updateInstructions, addWinBackground, removeListeners }
+    return { displayMove, updateDialogue, addWinBackground, removeListeners, addRestartButton }
   };
   
   // ####################### Player Factory #############################
@@ -144,12 +150,12 @@ document.addEventListener('DOMContentLoaded', function() {
       if (gameState.hasWin()) {
         let winningMoves = gameState.getWinningMoves();
         ui.addWinBackground(winningMoves); // highlight background of winning 
-        ui.updateInstructions(`Player no; ${getActivePlayer().getNumber()}, with symbol; ${symbol} wins the game`)
+        ui.updateDialogue(`Player no; ${getActivePlayer().getNumber()}, with symbol; ${symbol} wins the game`)
         gameOver = true;
-        // update instructions with 'play again?'
+        ui.addRestartButton();
       } else {
         changeActivePlayer();
-        ui.updatePlayerNumber(getActivePlayer().getNumber());
+        ui.updateDialogue(`Player ${getActivePlayer().getNumber()}'s turn.`);
       };
     }
 
@@ -160,10 +166,11 @@ document.addEventListener('DOMContentLoaded', function() {
     return { getActivePlayer, changeActivePlayer, processMove, isGameOver };
   };
   
-  // ####################### Start Game Set up #############################
+  // ####################### Game set up & start #############################
   function startGame() {
-    document.getElementById('start-game').remove();
     const game = gameController()
+    document.getElementById('dialogue').textContent = `Player ${game.getActivePlayer().getNumber()}'s turn.`;
+    document.getElementById('dialogue').style.cursor = 'default';
     const cells = document.querySelectorAll('#board-grid > div');
    
     function processMoveHandler(event) {
@@ -188,12 +195,10 @@ document.addEventListener('DOMContentLoaded', function() {
         cell.style.cursor = 'default';
       });
     }
-
-
   };
   
   // ####################### Initialisation #############################
-  const startEl = document.getElementById('start-game');
+  const startEl = document.getElementById('dialogue');
   if(startEl) {
     startEl.addEventListener('click', startGame);
   };

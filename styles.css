@@ -17,7 +17,7 @@
 
 /* ########################## Board ################################# */
 #board-grid {
-  padding-top: 6rem;
+  padding-top: 4rem;
   display: grid;
   grid-template-columns: repeat(3, 8rem);
   grid-template-rows: repeat(3, 8rem);
@@ -62,9 +62,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3rem;
-}
-
-#instructions > p {
   cursor: pointer;
+  gap: 1.5rem;
 }
